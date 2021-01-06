@@ -112,6 +112,7 @@ public class WebcamExample extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
+            //sjdkf;ajshdf;laskdf;laksjdfl;aksjpwqoeriuqpworiuqpowrieuqpoeiwu
             telemetry.addData("Frame Count", webcam.getFrameCount());
             telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
             telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
