@@ -1,18 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.os.CountDownTimer;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-//import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-//import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,8 +15,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
-import org.firstinspires.ftc.teamcode.odometry.OdometryGlobalCoordinatePosition;
 
+//import com.qualcomm.robotcore.hardware.DeviceInterfaceModule;
+//import com.qualcomm.robotcore.hardware.TouchSensor;
 
 
 /**
@@ -38,10 +33,10 @@ import org.firstinspires.ftc.teamcode.odometry.OdometryGlobalCoordinatePosition;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "KTM TeleOp 2020", group = "Linear Opmode")
+@TeleOp(name = "dont use", group = "Linear Opmode")
 
 //@Disabled
-public class TeleOP2020 extends LinearOpMode {
+public class TeleOP_WithOdometry extends LinearOpMode {
     private static final int LED_CHANNEL = 5;
     //    // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -56,7 +51,7 @@ public class TeleOP2020 extends LinearOpMode {
             double nol=0;
             return nol;
         } else{
-            return Math.signum(input) * (0.9*Math.pow(Math.abs(input), 2)+0.1);
+            return Math.signum(input) * (0.9* Math.pow(Math.abs(input), 2)+0.1);
         }
     }
     //переменные для ПИД
@@ -93,34 +88,7 @@ public class TeleOP2020 extends LinearOpMode {
     /*
      * Functions declaration
      */
-    //Lift claw
-    void liftClaw(double lift_power) {
-        m5Lift.setPower(lift_power);
-    }
 
-    void shovelTrigger(double shovel_pos) {
-        s5Shovel.setPosition(shovel_pos);
-    }
-
-    void setmotorsPower(DcMotor motor1,DcMotor motor2, double power) {
-        motor1.setPower(power);
-        motor2.setPower(-power);
-
-    }
-
-    void setPowerTimed(DcMotor motor, double power, long milliseconds) {
-        motor.setPower(power);
-        sleep(milliseconds);
-        motor.setPower(0);
-
-    }
-
-    void setPowerTimed(CRServo Crservo, double power, long milliseconds) {
-        Crservo.setPower(power);
-        sleep(milliseconds);
-        Crservo.setPower(0);
-
-    }
     protected double BatteryVoltage() {
         double result = Double.POSITIVE_INFINITY;
         for (VoltageSensor sensor : hardwareMap.voltageSensor) {
@@ -132,86 +100,17 @@ public class TeleOP2020 extends LinearOpMode {
         return result;
     }
 
-    public void goToPosition(double targetXPosition, double targetYPosition, double robotPower, double desiredRobotOrientation,double allowableDistanceError, DcMotor right_back, DcMotor left_front, DcMotor left_back, DcMotor right_front){
-        double distanceToXTarget = targetXPosition - globalPositionUpdate.returnXCoordinate();
-        double distanceToYTarget = targetYPosition - globalPositionUpdate.returnYCoordinate();
-
-        double distance = Math.hypot(distanceToXTarget,distanceToYTarget);
-        double time1=getRuntime();
-        double time2 = getRuntime();
-        while(!isStopRequested()&&distance>allowableDistanceError&& Math.abs(time1-time2)<5){
-            time2 = getRuntime();
-            distance = Math.hypot(distanceToXTarget,distanceToYTarget);
-            distanceToXTarget = targetXPosition - globalPositionUpdate.returnXCoordinate();
-            distanceToYTarget = targetYPosition - globalPositionUpdate.returnYCoordinate();
-
-            double robotMovementAngle = Math.toDegrees(Math.atan2(distanceToXTarget, distanceToYTarget));
-
-            double robot_movement_x_component = calculateX(robotMovementAngle, robotPower);
-            double robot_movement_y_component = calculateY(robotMovementAngle, robotPower);
-            double pivotCorrection = desiredRobotOrientation - globalPositionUpdate.returnOrientation();
-            double d1 = -pivotCorrection/40+robot_movement_y_component+robot_movement_x_component;
-            double d2 = -pivotCorrection/40-robot_movement_y_component-robot_movement_x_component;
-            double d3 = -pivotCorrection/40-robot_movement_y_component+robot_movement_x_component;
-            double d4 = -pivotCorrection/40+robot_movement_y_component-robot_movement_x_component;
-            double koeff = 0.5;
-            setMotorsPowerOdom(d1,d2,d3,d4, right_back, left_front, left_back, right_front);
-//            telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
-//            telemetry.addData("Y Position", globalPositionUpdate.returnYCoordinate() / COUNTS_PER_INCH);
-//            telemetry.addData("Orientation (Degrees)", globalPositionUpdate.returnOrientation());
-//            telemetry.addData("robot_movement_x_component", robot_movement_x_component);
-//            telemetry.addData("robot_movement_y_component", robot_movement_y_component);
-//            telemetry.addData("pivot", pivotCorrection);
-//            telemetry.addData("motor1_power", d1);
-//            telemetry.addData("motor2_power", d2);
-//            telemetry.addData("motor3_power", d3);
-//            telemetry.addData("motor4_power", d4);
-//            telemetry.update();
-        }
-        stopMovement(right_back, left_front, left_back, right_front);
-    }
-    protected void setMotorsPowerOdom(double D1_power, double D2_power, double D3_power, double D4_power, DcMotor right_back, DcMotor left_front, DcMotor left_back, DcMotor right_front) { //Warning: Р­С‚Р° С„СѓРЅРєС†РёСЏ РІРєР»СЋС‡РёС‚ РјРѕС‚РѕСЂС‹ РЅРѕ, РІС‹РєР»СЋС‡РёС‚СЊ РёС… РЅР°РґРѕ Р±СѓРґРµС‚ РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РєР°РєРѕРіРѕ Р»РёР±Рѕ СѓСЃР»РѕРІРёСЏ
-        // Send power to wheels
-        right_back.setPower(D1_power);
-        left_front.setPower(D2_power);
-        left_back.setPower(D3_power);
-        right_front.setPower(D4_power);
-    }
-    protected void stopMovement(DcMotor right_back, DcMotor left_front, DcMotor left_back, DcMotor right_front){
-        right_back.setPower(0);
-        left_front.setPower(0);
-        left_back.setPower(0);
-        right_front.setPower(0);
-    }
-    private double calculateX(double desiredAngle, double speed) {
-        return Math.sin(Math.toRadians(desiredAngle)) * speed;
-    }
-
-    /**
-     * Calculate the power in the y direction
-     * @param desiredAngle angle on the y axis
-     * @param speed robot's speed
-     * @return the y vector
-     */
-    private double calculateY(double desiredAngle, double speed) {
-        return Math.cos(Math.toRadians(desiredAngle)) * speed;
-    }
 
     /**
      * End of functions declaration
      */
-    OdometryGlobalCoordinatePosition globalPositionUpdate;
-    final double COUNTS_PER_INCH = 307.699557;
-
+//    OdometryGlobalCoordinatePosition globalPositionUpdate;
+//    final double COUNTS_PER_INCH = 307.699557;
     @Override
     public void runOpMode() {
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
 
         // Chassis
         DcMotor m1Drive = hardwareMap.get(DcMotor.class, "m1 drive");
@@ -242,12 +141,7 @@ public class TeleOP2020 extends LinearOpMode {
 
         //sensor
         //TouchSensor touchSensor = hardwareMap.get(TouchSensor.class, "sensor touch");
-        //-------
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        //m6Intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        //m6Intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         m1Drive.setDirection(DcMotor.Direction.REVERSE);
         m2Drive.setDirection(DcMotor.Direction.REVERSE);
         m3Drive.setDirection(DcMotor.Direction.REVERSE);
@@ -256,7 +150,6 @@ public class TeleOP2020 extends LinearOpMode {
         m7ruletka.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         m6Intake.setDirection(DcMotor.Direction.REVERSE);
         m7ruletka.setDirection(DcMotorSimple.Direction.FORWARD);
-        //DcMotor m6Intake=hardwareMap.dcMotor.get("m6Intake");
         m1Drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         m2Drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         m3Drive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -264,9 +157,9 @@ public class TeleOP2020 extends LinearOpMode {
         m5Lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         m6Intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         m7ruletka.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        // Wait for the game to start (driver presses PLAY)
+
+
         waitForStart();
-        //m1Drive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         runtime.reset();
 
         double m1DrivePower;
@@ -279,10 +172,6 @@ public class TeleOP2020 extends LinearOpMode {
         double m2m2m2=0;
         double m3m3m3=0;
         double m4m4m4=0;
-        double m1m1m1m1=0;
-        double m2m2m2m2=0;
-        double m3m3m3m3=0;
-        double m4m4m4m4=0;
         double m1m1=0;
         double m2m2=0;
         double m3m3=0;
@@ -315,15 +204,11 @@ public class TeleOP2020 extends LinearOpMode {
         double m2DrivePowerfordrivetofoundation11=0;
         double m3DrivePowerfordrivetofoundation11=0;
         double m4DrivePowerfordrivetofoundation11=0;
-        double time1;
-        double time2;
-        int nnnn=1;
         double a=0;
         double b=0;
         double prevangel=0;
-        boolean shoot=false;
         String positionServo="not ready";
-        //m1Drive.setMode(DcMotor.RunMode.RESET_ENCODERS);
+
         s5Shovel.setPosition(0.2);
         double voltage = BatteryVoltage();
         double koeff = 13.0 / voltage;
@@ -333,14 +218,6 @@ public class TeleOP2020 extends LinearOpMode {
 //        positionThread.start();
 //        globalPositionUpdate.reverseLeftEncoder();
         while (opModeIsActive()) {
-
-//int ANDYMARK_TICKS_PER_REV = 1120;
-            /*
-             * Chassis movement
-             */
-            //Setup a variable for each drive wheel to save power level for telemetry
-
-
             // POV Mode uses right stick to go forward and right to slide.
             // - This uses basic math to combine motions and is easier to drive straight.
             double driveL = -gamepad1.left_stick_y;
@@ -350,12 +227,12 @@ public class TeleOP2020 extends LinearOpMode {
             boolean ruletka_suda = gamepad2.dpad_down;
             double zagrebalo = -0.7*gamepad2.left_stick_y;
             double podiem = 1*gamepad2.right_stick_y;
-            double slideR = 0.7*-gamepad1.left_trigger;
+            double slideR = -0.7*gamepad1.left_trigger;
             double slideL = 0.7*gamepad1.right_trigger;
             double vpernazad=gamepad1.left_stick_y;
             double vleovpravo= -gamepad1.left_stick_x;
-            double povorot= 0.87*gamepad1.right_stick_x;
-            //DeviceInterfaceModule cdim = hardwareMap.deviceInterfaceModule.get("dim");
+            double povorot= gamepad1.right_stick_x;
+
             //Slide Related
             slideL=magic(slideL);
             slideR=magic(slideR);
@@ -366,10 +243,10 @@ public class TeleOP2020 extends LinearOpMode {
                 m4DrivePower = povorot+vpernazad-vleovpravo;
                 m1DrivePower = povorot+vpernazad+vleovpravo;
                 m3DrivePower = povorot-vpernazad+vleovpravo;*/
-            m2DrivePower = (m2left+m2right+m1m1+m1m1m1+m1m1m1m1+m1DrivePowerfordrivetofoundation+m1DrivePowerfordrivetofoundation2+m1DrivePowerfordrivetofoundation1+m1DrivePowerfordrivetofoundation11) + povorot-vpernazad+(slideL+slideR)-(vleovpravo);
-            m4DrivePower = (m4left+m4right+m2m2+m2m2m2+m2m2m2m2+m2DrivePowerfordrivetofoundation+m2DrivePowerfordrivetofoundation2+m2DrivePowerfordrivetofoundation1+m2DrivePowerfordrivetofoundation11)+ povorot+vpernazad+(slideL+slideR)-(vleovpravo);
-            m1DrivePower = (m1left+m1right+m3m3+m3m3m3+m3m3m3m3+m3DrivePowerfordrivetofoundation+m3DrivePowerfordrivetofoundation2+m3DrivePowerfordrivetofoundation1+m3DrivePowerfordrivetofoundation11)+povorot+vpernazad+(slideL+slideR)+(vleovpravo);
-            m3DrivePower = (m3left+m3right+m4m4+m4m4m4+m4m4m4m4+m4DrivePowerfordrivetofoundation+m4DrivePowerfordrivetofoundation2+m4DrivePowerfordrivetofoundation1+m4DrivePowerfordrivetofoundation11)+ povorot-vpernazad+(slideL+slideR)+(vleovpravo);
+            m2DrivePower = (m2left+m2right+m1m1+m1m1m1+m1DrivePowerfordrivetofoundation+m1DrivePowerfordrivetofoundation2+m1DrivePowerfordrivetofoundation1+m1DrivePowerfordrivetofoundation11) + povorot-vpernazad+(slideL+slideR)-(vleovpravo);
+            m4DrivePower = (m4left+m4right+m2m2+m2m2m2+m2DrivePowerfordrivetofoundation+m2DrivePowerfordrivetofoundation2+m2DrivePowerfordrivetofoundation1+m2DrivePowerfordrivetofoundation11)+ povorot+vpernazad+(slideL+slideR)-(vleovpravo);
+            m1DrivePower = (m1left+m1right+m3m3+m3m3m3+m3DrivePowerfordrivetofoundation+m3DrivePowerfordrivetofoundation2+m3DrivePowerfordrivetofoundation1+m3DrivePowerfordrivetofoundation11)+povorot+vpernazad+(slideL+slideR)+(vleovpravo);
+            m3DrivePower = (m3left+m3right+m4m4+m4m4m4+m4DrivePowerfordrivetofoundation+m4DrivePowerfordrivetofoundation2+m4DrivePowerfordrivetofoundation1+m4DrivePowerfordrivetofoundation11)+ povorot-vpernazad+(slideL+slideR)+(vleovpravo);
             double mochs=1;
             double max = Math.max(Math.max(m1DrivePower, m2DrivePower), Math.max(m3DrivePower, m4DrivePower));
             // Send calculated power to wheelsв
@@ -389,7 +266,7 @@ public class TeleOP2020 extends LinearOpMode {
             /*
              * End of chassis related code.
              */
-            double servo5;
+
 
             if(podiem!=0&&a==0){
                 if(podiem>0) {
@@ -430,7 +307,7 @@ public class TeleOP2020 extends LinearOpMode {
 
             if(gamepad2.dpad_left){
                 m6Intake.setPower(koeff*0.8);
-            }else if(gamepad2.dpad_right||shoot){
+            }else if(gamepad2.dpad_right){
                 m6Intake.setPower(koeff*0.72);
             }else{
                 m6Intake.setPower(0);
@@ -438,33 +315,48 @@ public class TeleOP2020 extends LinearOpMode {
 
 //----------------------------------------
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            if(gamepad1.y){
-                if (angles.firstAngle > 5 || angles.firstAngle < -5) {
-                    if (angles.firstAngle > 5) {
-                        m1m1 = angles.firstAngle / 60;
-                        m2m2 = angles.firstAngle / 60;
-                        m3m3 = angles.firstAngle / 60;
-                        m4m4 = angles.firstAngle / 60;
-                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if(gamepad1.x){
+
+
+                    if (angles.firstAngle > 5 || angles.firstAngle < -5) {
+                        if (angles.firstAngle > 5) {
+                            m1m1 = angles.firstAngle / 60;
+                            m2m2 = angles.firstAngle / 60;
+                            m3m3 = angles.firstAngle / 60;
+                            m4m4 = angles.firstAngle / 60;
+                            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        } else {
+                            m1m1 = 0;
+                            m2m2 = 0;
+                            m3m3 = 0;
+                            m4m4 = 0;
+                        }
+                        if (angles.firstAngle < -5) {
+                            m1m1m1 = angles.firstAngle / 60;
+                            m2m2m2 = angles.firstAngle / 60;
+                            m3m3m3 = angles.firstAngle / 60;
+                            m4m4m4 = angles.firstAngle / 60;
+                            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                        } else {
+                            m1m1m1 = 0;
+                            m2m2m2 = 0;
+                            m3m3m3 = 0;
+                            m4m4m4 = 0;
+                        }
                     } else {
-                        m1m1 = 0;
-                        m2m2 = 0;
-                        m3m3 = 0;
-                        m4m4 = 0;
+                        if (DistanceSensor_left.getDistance(DistanceUnit.CM) < 100) {
+                            m1left = -0.3;
+                            m2left = 0.3;
+                            m3left = -0.3;
+                            m4left = 0.3;
+                        }
+                        if (DistanceSensor_left.getDistance(DistanceUnit.CM) > 119) {
+                            m1right = 0.3;
+                            m2right = -0.3;
+                            m3right = 0.3;
+                            m4right = -0.3;
+                        }
                     }
-                    if (angles.firstAngle < -5) {
-                        m1m1m1 = angles.firstAngle / 60;
-                        m2m2m2 = angles.firstAngle / 60;
-                        m3m3m3 = angles.firstAngle / 60;
-                        m4m4m4 = angles.firstAngle / 60;
-                        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    } else {
-                        m1m1m1 = 0;
-                        m2m2m2 = 0;
-                        m3m3m3 = 0;
-                        m4m4m4 = 0;
-                    }
-                }
             }else{
                 m1m1 =0;
                 m2m2=0;
@@ -483,65 +375,7 @@ public class TeleOP2020 extends LinearOpMode {
                 m3right=0;
                 m4right=0;
             }
-            if(gamepad1.left_bumper){
-//                if (DistanceSensor_left.getDistance(DistanceUnit.CM) < 100) {
-//                    m1left = -0.4;
-//                    m2left = 0.4;
-//                    m3left = -0.4;
-//                    m4left = 0.4;
-//                }
-//                if (DistanceSensor_left.getDistance(DistanceUnit.CM) > 119) {
-//                    m1right = 0.4;
-//                    m2right = -0.4;
-//                    m3right = 0.4;
-//                    m4right = -0.4;
-//                }
-                m1Drive.setPower(0.4);
-                m2Drive.setPower(-0.4);
-                m3Drive.setPower(0.4);
-                m4Drive.setPower(-0.4);
 
-                sleep(1000);
-            }
-            if(gamepad1.left_bumper){
-//                if (DistanceSensor_right.getDistance(DistanceUnit.CM) < 100) {
-//                    m1right = 0.4;
-//                    m2right = -0.4;
-//                    m3right = 0.4;
-//                    m4right = -0.4;
-//                }
-//                if (DistanceSensor_right.getDistance(DistanceUnit.CM) > 119) {
-//                    m1left = -0.4;
-//                    m2left = 0.4;
-//                    m3left = -0.4;
-//                    m4left = 0.4;
-//                }
-                m1Drive.setPower(-0.4);
-                m2Drive.setPower(0.4);
-                m3Drive.setPower(-0.4);
-                m4Drive.setPower(0.4);
-
-                sleep(1000);
-
-            }
-            if(gamepad1.x){
-                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                if(angles.firstAngle>-5.5*nnnn){
-                    m1Drive.setPower(0.2);
-                    m2Drive.setPower(0.2);
-                    m3Drive.setPower(0.2);
-                    m4Drive.setPower(0.2);
-                    angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                }
-                sleep(1000);
-                nnnn+=1;
-
-            }else{
-                m1m1m1m1=0;
-                m2m2m2m2=0;
-                m3m3m3m3=0;
-                m4m4m4m4=0;
-            }
 //----------------------------------------
             if(gamepad1.dpad_up){
                 m1DrivePowerfordrivetofoundation11=0.3;
@@ -607,34 +441,6 @@ public class TeleOP2020 extends LinearOpMode {
             telemetry.update();
 
         }
-//        if(gamepad1.b){
-//
-//            shoot = true;
-//
-//            goToPosition(135* COUNTS_PER_INCH, -11*COUNTS_PER_INCH,0.8*koeff,0,6*COUNTS_PER_INCH, m1Drive,m2Drive,m3Drive,m4Drive);
-//
-//            goToPosition(175* COUNTS_PER_INCH, -11*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH, m1Drive,m2Drive,m3Drive,m4Drive);
-//        }
-//        if(gamepad1.x){
-//
-//            shoot = true;
-//
-//            goToPosition(-165* COUNTS_PER_INCH, -11*COUNTS_PER_INCH,0.8*koeff,0,5*COUNTS_PER_INCH, m1Drive,m2Drive,m3Drive,m4Drive);
-//
-//            goToPosition(-220* COUNTS_PER_INCH, -11*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH, m1Drive,m2Drive,m3Drive,m4Drive);
-//        }
-//        if(gamepad1.y){
-//            a+=16;
-//            s5Shovel.setPosition(0);
-//            sleep(400);
-//            s5Shovel.setPosition(0.19);
-//            goToPosition((globalPositionUpdate.returnXCoordinate()/COUNTS_PER_INCH+20)* COUNTS_PER_INCH, globalPositionUpdate.returnYCoordinate(),0.3*koeff,0,2*COUNTS_PER_INCH, m1Drive,m2Drive,m3Drive,m4Drive);
-//
-//        }
-//        if(gamepad1.right_bumper){
-//            shoot=false;
-//        }
-
         //globalPositionUpdate.stop();
     }
 

@@ -1,23 +1,28 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Color;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+//import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
-
-//import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
 public abstract class Robot extends LinearOpMode {
     protected static final int LED_CHANNEL = 5;
@@ -59,27 +64,27 @@ public abstract class Robot extends LinearOpMode {
         }
         return result;
     }
-/*protected void minusgoldmineral(){
-    setMotorsPowerTimed(-0.2,0.2,-0.2,0.2,800);//vlevo
-    sleep(200);
-    setMotorsPowerTimed(0.2,-0.2,0.2,-0.2,800);//vlevo
-    sleep(200);
-    s5Shovel.setPosition(0);
-}
-    protected void putBox() {
-        setMotorsPowerTimed(0.18, -0.18, -0.18, 0.18, 0, 0, 1200);//РґРІРёР¶РµРЅРёРµ РЅР°Р·Р°Рґ
-        setMotorsPowerTimed(-0.2, 0.2, 0.2, -0.2, 0, 0, 300);//РґРІРёР¶РµРЅРёРµ РІРїРµСЂС‘Рґ
-        rotateClaw(0);
-        sleep(700);
-        setMotorsPowerTimed(0.2, -0.2, -0.2, 0.2, 0, 0, 400);//РґРІРёР¶РµРЅРёРµ РІРїРµСЂС‘Рґ
-        setMotorsPowerTimed(-0.2, 0.2, 0.2, -0.2, 0, 0, 300);//РґРІРёР¶РµРЅРёРµ РЅР°Р·Р°Рґ
-        rotateClaw(0.8);
+    /*protected void minusgoldmineral(){
+        setMotorsPowerTimed(-0.2,0.2,-0.2,0.2,800);//vlevo
+        sleep(200);
+        setMotorsPowerTimed(0.2,-0.2,0.2,-0.2,800);//vlevo
+        sleep(200);
+        s5Shovel.setPosition(0);
     }
+        protected void putBox() {
+            setMotorsPowerTimed(0.18, -0.18, -0.18, 0.18, 0, 0, 1200);//РґРІРёР¶РµРЅРёРµ РЅР°Р·Р°Рґ
+            setMotorsPowerTimed(-0.2, 0.2, 0.2, -0.2, 0, 0, 300);//РґРІРёР¶РµРЅРёРµ РІРїРµСЂС‘Рґ
+            rotateClaw(0);
+            sleep(700);
+            setMotorsPowerTimed(0.2, -0.2, -0.2, 0.2, 0, 0, 400);//РґРІРёР¶РµРЅРёРµ РІРїРµСЂС‘Рґ
+            setMotorsPowerTimed(-0.2, 0.2, 0.2, -0.2, 0, 0, 300);//РґРІРёР¶РµРЅРёРµ РЅР°Р·Р°Рґ
+            rotateClaw(0.8);
+        }
 
-    // Rotate claw
-    protected void rotateClaw(double rotate) { //if rotate true then rotate to  180 . else to 0
-        s3Rotation.setPosition(rotate);
-    }*/
+        // Rotate claw
+        protected void rotateClaw(double rotate) { //if rotate true then rotate to  180 . else to 0
+            s3Rotation.setPosition(rotate);
+        }*/
     protected void Shooting(double kf,double power) { //Warning: Р­С‚Р° С„СѓРЅРєС†РёСЏ РІРєР»СЋС‡РёС‚ РјРѕС‚РѕСЂС‹ РЅРѕ, РІС‹РєР»СЋС‡РёС‚СЊ РёС… РЅР°РґРѕ Р±СѓРґРµС‚ РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РєР°РєРѕРіРѕ Р»РёР±Рѕ СѓСЃР»РѕРІРёСЏ
         // Send power to wheels
         m6Intake.setPower(kf*-power);
@@ -91,7 +96,7 @@ public abstract class Robot extends LinearOpMode {
         s5Shovel.setPosition(0);
         sleep(400);
         s5Shovel.setPosition(0.19);
-        sleep(400);
+        sleep(200);
     }
     protected void setMotorsPower(double D1_power, double D2_power, double D3_power, double D4_power) { //Warning: Р­С‚Р° С„СѓРЅРєС†РёСЏ РІРєР»СЋС‡РёС‚ РјРѕС‚РѕСЂС‹ РЅРѕ, РІС‹РєР»СЋС‡РёС‚СЊ РёС… РЅР°РґРѕ Р±СѓРґРµС‚ РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РєР°РєРѕРіРѕ Р»РёР±Рѕ СѓСЃР»РѕРІРёСЏ
         // Send power to wheels
@@ -109,16 +114,15 @@ public abstract class Robot extends LinearOpMode {
         m4Drive.setPower(D4_power);
     }
     protected void otpustivobl(double koeff){
-        m7relutka.setPower(koeff*-0.35);
-        sleep(700);
-        m7relutka.setPower(0);
-        sleep(100);
+        m7relutka.setPower(koeff*-0.4);
+        sleep(400);
         s1TopClaw.setPosition(1);
-        sleep(800);
-        m7relutka.setPower(koeff*0.35);
-        sleep(1500);
+        sleep(150);
         m7relutka.setPower(0);
         sleep(100);
+        m7relutka.setPower(koeff*0.4);
+        sleep(1000);
+        m7relutka.setPower(0);
     }
     protected void setMotorsPowerforvard(double D1_power, double D2_power, double D3_power, double D4_power, Orientation angles, BNO055IMU imu, double angle) { //Warning: Р­С‚Р° С„СѓРЅРєС†РёСЏ РІРєР»СЋС‡РёС‚ РјРѕС‚РѕСЂС‹ РЅРѕ, РІС‹РєР»СЋС‡РёС‚СЊ РёС… РЅР°РґРѕ Р±СѓРґРµС‚ РїРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РєР°РєРѕРіРѕ Р»РёР±Рѕ СѓСЃР»РѕРІРёСЏ
         // Send power to wheels
@@ -128,7 +132,7 @@ public abstract class Robot extends LinearOpMode {
         m3Drive.setPower(D3_power);
         m4Drive.setPower(D4_power-(angle-angles.firstAngle) / 24);
     }
-//    protected void turn90left(double D1_power, double D2_power, double D3_power, double D4_power, Orientation angles, BNO055IMU imu, double angle){
+    //    protected void turn90left(double D1_power, double D2_power, double D3_power, double D4_power, Orientation angles, BNO055IMU imu, double angle){
 //        angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 //        while(!isStopRequested()&&angles.firstAngle<82){
 //            setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);

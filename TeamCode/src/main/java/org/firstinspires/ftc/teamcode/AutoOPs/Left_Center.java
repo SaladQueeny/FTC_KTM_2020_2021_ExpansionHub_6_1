@@ -21,18 +21,18 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.teamcode.Robot;
-import org.firstinspires.ftc.teamcode.Vision.EasyOpenCVVisionL;
+import org.firstinspires.ftc.teamcode.Vision.EasyOpenCVVision;
 import org.firstinspires.ftc.teamcode.odometry.OdometryGlobalCoordinatePosition;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
-@Autonomous(name = "Left", group = "AutoOP")
-public class Left extends Robot {
+@Autonomous(name = "Left_Center", group = "AutoOP")
+public class Left_Center extends Robot {
     private ElapsedTime runtime = new ElapsedTime();
     OpenCvInternalCamera phoneCam;
-    EasyOpenCVVisionL pipeline;
+    EasyOpenCVVision pipeline;
     DcMotor right_front, right_back, left_front, left_back;
     //Odometry Wheels
     DcMotor verticalLeft, verticalRight, horizontal;
@@ -57,7 +57,7 @@ public class Left extends Robot {
         // Camera setup
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         phoneCam = OpenCvCameraFactory.getInstance().createInternalCamera(OpenCvInternalCamera.CameraDirection.BACK, cameraMonitorViewId);
-        pipeline = new EasyOpenCVVisionL();
+        pipeline = new EasyOpenCVVision();
         phoneCam.setPipeline(pipeline);
         phoneCam.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
         phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -70,7 +70,8 @@ public class Left extends Robot {
         telemetry.update();
         s1TopClaw.setPosition(0);
         s4Kicker.setPosition(1);
-
+        s3Rotation.setPosition(0);
+        //Voltage regulation depending on the battery charge level
         double voltage = BatteryVoltage();
         double koeff = 13.0 / voltage;
         koeff = Math.pow(koeff, 1.25);
@@ -80,20 +81,20 @@ public class Left extends Robot {
         globalPositionUpdate.reverseLeftEncoder();
         waitForStart();
         {
-            ElapsedTime timer = new ElapsedTime();
+
             imu.initialize(parameters);
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             telemetry.clear();
             telemetry.addData("Number of rings ", pipeline.position);
             telemetry.update();
-            int countOfRings=12;
-            if((pipeline.position == EasyOpenCVVisionL.RingPosition.FOUR)){
+            int countOfRings = 12;
+            if ((pipeline.position == EasyOpenCVVision.RingPosition.FOUR)) {
                 countOfRings = 4;
             }
-            if((pipeline.position == EasyOpenCVVisionL.RingPosition.ONE)){
+            if ((pipeline.position == EasyOpenCVVision.RingPosition.ONE)) {
                 countOfRings = 1;
             }
-            if((pipeline.position == EasyOpenCVVisionL.RingPosition.NONE)){
+            if ((pipeline.position == EasyOpenCVVision.RingPosition.NONE)) {
                 countOfRings = 0;
             }
             //Voltage regulation depending on the battery charge level
@@ -101,92 +102,238 @@ public class Left extends Robot {
             telemetry.update();
             boolean check= true;
 
-            Shooting(koeff,0.78);
-            goToPosition(32* COUNTS_PER_INCH, -217*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
+            //shooting targets
+
+
+            Shooting(koeff,0.68);
+            goToPosition(-12* COUNTS_PER_INCH, -170*COUNTS_PER_INCH,0.5*koeff,0,7*COUNTS_PER_INCH);
+            goToPosition(-12* COUNTS_PER_INCH, -227*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
+            Shoot();
+
             angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                while(!isStopRequested()&&angles.firstAngle>-16){
-                    setMotorsPower(0.3*koeff,0.3*koeff,0.3*koeff,0.3*koeff);
-                    angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                }
+            while(!isStopRequested()&&angles.firstAngle>-5.5){
+                setMotorsPower(0.15*koeff,0.15*koeff,0.15*koeff,0.15*koeff);
+                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            }
+            setMotorsPower(0,0,0,0);
+            Shooting(koeff,0.7);
+            Shoot();
+
+            while(!isStopRequested()&&angles.firstAngle>-11){
+                setMotorsPower(0.15*koeff,0.15*koeff,0.15*koeff,0.15*koeff);
+                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            }
             setMotorsPower(0,0,0,0);
             Shoot();
-            sleep(500);
-            Shoot();
-            sleep(500);
-            Shoot();
+
             endShooting();
+            s3Rotation.setPosition(1);
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle < -5) {
+                    setMotorsPower(-0.3 * koeff, -0.3 * koeff, -0.3 * koeff, -0.3 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+                s3Rotation.setPosition(1);
             s4Kicker.setPosition(0);
-            //goToPosition(-40* COUNTS_PER_INCH, -217*COUNTS_PER_INCH,0.3,40,2*COUNTS_PER_INCH);
-            sleep(10);
+
+/*
+
+            //shooting high gates
+
+            Shooting(koeff,0.75);
+            goToPosition(-12* COUNTS_PER_INCH, -150*COUNTS_PER_INCH,0.5*koeff,0,7*COUNTS_PER_INCH);
+            goToPosition(-12* COUNTS_PER_INCH, -207*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
+            sleep(300);
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            while (!isStopRequested() && angles.firstAngle < 6) {
+                setMotorsPower(-0.18 * koeff, -0.18 * koeff, -0.18 * koeff, -0.18 * koeff);
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            }
+            setMotorsPower(0, 0, 0, 0);
+            sleep(500);
+            Shooting(koeff, 0.78);
+            Shoot();
+            sleep(100);
+            Shoot();
+            sleep(100);
+            Shoot();
+            s4Kicker.setPosition(0);
+            endShooting();
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            while (!isStopRequested() && angles.firstAngle > 2) {
+                setMotorsPower(0.3 * koeff, 0.3 * koeff, 0.3 * koeff, 0.3 * koeff);
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            }
+            setMotorsPower(0, 0, 0, 0);
+            s3Rotation.setPosition(1);
+
+*/
+
+            //moving back to rings
+            if(countOfRings==4&&check) {
+                check=false;
+                goToPosition(5 * COUNTS_PER_INCH, -125 * COUNTS_PER_INCH, 0.6 * koeff, 0, 8 * COUNTS_PER_INCH);
+
+                goToPosition(74 * COUNTS_PER_INCH, -105 * COUNTS_PER_INCH, 0.3 * koeff, 0, 2 * COUNTS_PER_INCH);
+
+                //collecting rings
+                setMotorsPower(-0.7,0.7,0.7,-0.7);
+                sleep(200);
+                m5Lift.setPower(-1);
+                setMotorsPower(0,0,0,0);
+                sleep(900);
+
+                setMotorsPower(-0.2,0.2,0.2,-0.2);
+                sleep(550);
+                setMotorsPower(0,0,0,0);
+                sleep(900);
+
+                setMotorsPower(-0.2,0.2,0.2,-0.2);
+                sleep(550);
+                setMotorsPower(0,0,0,0);
+                sleep(1400);
+
+                m5Lift.setPower(0);
+                s4Kicker.setPosition(1);
+                sleep(500);
 
 
-            angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+                //shooting high gates
+                Shooting(koeff, 0.77);
+                sleep(500);
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle > -4) {
+                    setMotorsPower(0.1 * koeff, 0.1 * koeff, 0.1 * koeff, 0.1 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+                sleep(500);
+                Shooting(koeff, 0.78);
+                Shoot();
+                sleep(100);
+                Shoot();
+                sleep(100);
+                Shoot();
+                s4Kicker.setPosition(0);
+                endShooting();
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle < -2) {
+                    setMotorsPower(-0.3 * koeff, -0.3 * koeff, -0.3 * koeff, -0.3 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+
+
+                goToPosition(40* COUNTS_PER_INCH,-380*COUNTS_PER_INCH,0.6*koeff,0,10*COUNTS_PER_INCH);
+
+                //m5Lift.setPower(-1);
+                goToPosition(140* COUNTS_PER_INCH,-455*COUNTS_PER_INCH,0.3*koeff,0,3*COUNTS_PER_INCH);
+                s3Rotation.setPosition(0);
+                otpustivobl(koeff);
+
+
+                setMotorsPower(0,0,0,0);
+                goToPosition(45 * COUNTS_PER_INCH, -430 * COUNTS_PER_INCH, 0.5*koeff, 0, 8* COUNTS_PER_INCH);
+
+                goToPosition(5* COUNTS_PER_INCH, -300 * COUNTS_PER_INCH, 0.4*koeff, 0, 4* COUNTS_PER_INCH);
+
+            }
+            if(countOfRings==1&&check){//добавить координату
+                check=false;
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle < -5) {
+                    setMotorsPower(-0.3 * koeff, -0.3 * koeff, -0.3 * koeff, -0.3 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+                s4Kicker.setPosition(0);
+                m5Lift.setPower(-1);
+
+                goToPosition(5 * COUNTS_PER_INCH, -130 * COUNTS_PER_INCH, 0.6 * koeff, 0, 8 * COUNTS_PER_INCH);
+                goToPosition(75 * COUNTS_PER_INCH, -110 * COUNTS_PER_INCH, 0.3 * koeff, 0, 2 * COUNTS_PER_INCH);
+
+                goToPosition(75 * COUNTS_PER_INCH, -150 * COUNTS_PER_INCH, 0.15 * koeff, 0, 2 * COUNTS_PER_INCH);
+                sleep(1000);
+                s4Kicker.setPosition(1);
+                sleep(500);
+                Shooting(koeff, 0.78);
+
+                sleep(500);
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle > -4) {
+                    setMotorsPower(0.18 * koeff, 0.18 * koeff, 0.18 * koeff, 0.18 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+                m5Lift.setPower(0);
+                sleep(500);
+                Shoot();
+                sleep(100);
+
+                Shoot();
+                endShooting();
+                s4Kicker.setPosition(0);
+                angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                while (!isStopRequested() && angles.firstAngle < -5) {
+                    setMotorsPower(-0.3 * koeff, -0.3 * koeff, -0.3 * koeff, -0.3 * koeff);
+                    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                }
+                setMotorsPower(0, 0, 0, 0);
+                //добавить координату
+
+                //m5Lift.setPower(-1);
+                goToPosition(40* COUNTS_PER_INCH,-350*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
+                s3Rotation.setPosition(0);
+                otpustivobl(koeff);
+
+                setMotorsPower(0,0,0,0);
+
+                goToPosition(5 * COUNTS_PER_INCH, -300 * COUNTS_PER_INCH, 0.3*koeff, 0, 3 * COUNTS_PER_INCH);
+
+            }
+            if(countOfRings==0&&check){//добавить координату
+                check=false;
+                goToPosition(80* COUNTS_PER_INCH,-275*COUNTS_PER_INCH,0.5*koeff,0,7*COUNTS_PER_INCH);
+
+                //m5Lift.setPower(-1);
+                goToPosition(134* COUNTS_PER_INCH,-275*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
+                s3Rotation.setPosition(0);
+                otpustivobl(koeff);
+
+
+                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 while(!isStopRequested()&&angles.firstAngle<-5){
                     setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);
                     angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
                 }
-            setMotorsPower(0,0,0,0);
-            if(countOfRings==0&&check){
-                check=false;
-                goToPosition(34* COUNTS_PER_INCH,-170* COUNTS_PER_INCH,0.3*koeff,0,4*COUNTS_PER_INCH);
-                while(timer.milliseconds() < 25000){
-
-                };
-                goToPosition(34* COUNTS_PER_INCH,-275* COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
-                otpustivobl(koeff);
-                //goToPosition(28 * COUNTS_PER_INCH, -274 * COUNTS_PER_INCH, 0.3*koeff, 0, 2 * COUNTS_PER_INCH);
-
-            }
-            if(countOfRings==4&&check){
-                check=false;
-                goToPosition(30* COUNTS_PER_INCH,-455*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
-                otpustivobl(koeff);
-                goToPosition(34 * COUNTS_PER_INCH, -290 * COUNTS_PER_INCH, 0.3*koeff, 0, 2 * COUNTS_PER_INCH);
-
-            }
-            if(countOfRings==1&&check){
-                check=false;
-                goToPosition(-3* COUNTS_PER_INCH,-397*COUNTS_PER_INCH,0.3*koeff,0,2*COUNTS_PER_INCH);
-                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    while(!isStopRequested()&&angles.firstAngle>-85){
-                        setMotorsPower(0.3*koeff,0.3*koeff,0.3*koeff,0.3*koeff);
-                        angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    }
                 setMotorsPower(0,0,0,0);
-                sleep(50);
-                otpustivobl(koeff);
 
-                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    while(!isStopRequested()&&angles.firstAngle<-5){
-                        setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);
-                        angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                    }
-                setMotorsPower(0,0,0,0);
-                goToPosition(34 * COUNTS_PER_INCH, -290 * COUNTS_PER_INCH, 0.3*koeff, 0, 2 * COUNTS_PER_INCH);
+                goToPosition(5 * COUNTS_PER_INCH, -300 * COUNTS_PER_INCH, 0.3*koeff, 0, 3 * COUNTS_PER_INCH);
 
             }
-            //goToPosition(24 * COUNTS_PER_INCH, -284 * COUNTS_PER_INCH, 0.3*koeff, 0, 2 * COUNTS_PER_INCH);
-            s4Kicker.setPosition(0);
-
+            //добавить координату
 
             globalPositionUpdate.stop();
 
-
-
-
-
-
-
-
-//            Shooting(koeff,0.81);
+//            //otpustivobl(koeff);
+//            Shooting(koeff,0.82);
 //            double time1;
 //            double time2;
 //            time1=getRuntime();
 //            time2=getRuntime();
-//            angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//            while(!isStopRequested()&&angles.firstAngle>-10){
-//                setMotorsPower(0.3*koeff,0.3*koeff,0.3*koeff,0.3*koeff);
-//                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//            while(!isStopRequested()&&DistanceSensor_right.getDistance(DistanceUnit.CM)>32){
+//                setMotorsPowerright(-0.3*koeff,0.3*koeff,-0.3*koeff,0.3*koeff,angles, imu, 0);
+//                time2=getRuntime();
+//            }
+//            setMotorsPower(0,0,0,0);
+//            time1=getRuntime();
+//            time2=getRuntime();
+//            while(!isStopRequested()&&time2-time1<0.2){
+//                //angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//                setMotorsPowerforvard(0.5*koeff,-0.5*koeff,-0.5*koeff,0.5*koeff,angles, imu, 0);
+//                time2=getRuntime();
 //            }
 //            setMotorsPower(0,0,0,0);
 //            sleep(1000);
@@ -196,18 +343,12 @@ public class Left extends Robot {
 //            sleep(1000);
 //            Shoot();
 //            endShooting();
-//            angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//            while(!isStopRequested()&&angles.firstAngle<-5){
-//                setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);
-//                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//            }
-//            setMotorsPower(0,0,0,0);
-//
-//            while(!isStopRequested()&&DistanceSensor_left.getDistance(DistanceUnit.CM)>20){
-//                setMotorsPowerleft(0.3*koeff,-0.3*koeff,0.3*koeff,-0.3*koeff,angles, imu, 0);
+//            while(!isStopRequested()&&DistanceSensor_right.getDistance(DistanceUnit.CM)>20){
+//                setMotorsPowerright(-0.3*koeff,0.3*koeff,-0.3*koeff,0.3*koeff,angles, imu, 0);
 //                time2=getRuntime();
 //            }
 //            setMotorsPower(0,0,0,0);
+//
 //            // The choice of the direction of movement depending on the number of rings
 //            boolean check =true;
 //            if (countOfRings==4&&check) {
@@ -217,6 +358,8 @@ public class Left extends Robot {
 //                while(!isStopRequested()&&DistanceSensor_forward.getDistance(DistanceUnit.CM)>69){
 //                    setMotorsPowerforvard(-0.5*koeff,0.5*koeff,0.5*koeff,-0.5*koeff,angles, imu, 0);
 //                    time2=getRuntime();
+////                    telemetry.addData("angle of rotate ", angles.firstAngle);
+////                    telemetry.update();
 //                }
 //                setMotorsPower(0,0,0,0);
 //
@@ -228,7 +371,6 @@ public class Left extends Robot {
 //                    time2=getRuntime();
 //                }
 //                setMotorsPower(0,0,0,0);
-//                sleep(200);
 //                time1=getRuntime();
 //                time2=getRuntime();
 //                while(!isStopRequested()&&DistanceSensor_forward.getDistance(DistanceUnit.CM)<160){
@@ -243,15 +385,15 @@ public class Left extends Robot {
 //                check=false;
 //                time1=getRuntime();
 //                time2=getRuntime();
-//                while(!isStopRequested()&&DistanceSensor_forward.getDistance(DistanceUnit.CM)>95){
+//                while(!isStopRequested()&&DistanceSensor_forward.getDistance(DistanceUnit.CM)>80){
 //                    setMotorsPowerforvard(-0.5*koeff,0.5*koeff,0.5*koeff,-0.5*koeff,angles, imu, 0);
 //                    time2=getRuntime();
 //                }
 //                setMotorsPower(0,0,0,0);
 //
 //                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//                while(!isStopRequested()&&angles.firstAngle>-87){
-//                    setMotorsPower(0.3*koeff,0.3*koeff,0.3*koeff,0.3*koeff);
+//                while(!isStopRequested()&&angles.firstAngle<82){
+//                    setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);
 //                    angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 //                }
 //                setMotorsPower(0,0,0,0);
@@ -265,8 +407,8 @@ public class Left extends Robot {
 //                otpustivobl(koeff);
 //
 //                angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//                while(!isStopRequested()&&angles.firstAngle<-5){
-//                    setMotorsPower(-0.3*koeff,-0.3*koeff,-0.3*koeff,-0.3*koeff);
+//                while(!isStopRequested()&&angles.firstAngle>5){
+//                    setMotorsPower(0.3*koeff,0.3*koeff,0.3*koeff,0.3*koeff);
 //                    angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 //                }
 //                setMotorsPower(0,0,0,0);
@@ -274,6 +416,7 @@ public class Left extends Robot {
 //                time1=getRuntime();
 //                time2=getRuntime();
 //                while(!isStopRequested()&&DistanceSensor_forward.getDistance(DistanceUnit.CM)<160){
+//                    angles=imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 //                    setMotorsPowerback(0.5*koeff,-0.5*koeff,-0.5*koeff,0.5*koeff,angles, imu, 0);
 //                    time2=getRuntime();
 //                }
@@ -308,8 +451,9 @@ public class Left extends Robot {
 //                    time2=getRuntime();
 //                }
 //                setMotorsPower(0,0,0,0);
-//
-//            }
+
+
+            //}
         }
 
 
@@ -331,10 +475,10 @@ public class Left extends Robot {
             double robot_movement_x_component = calculateX(robotMovementAngle, robotPower);
             double robot_movement_y_component = calculateY(robotMovementAngle, robotPower);
             double pivotCorrection = desiredRobotOrientation - globalPositionUpdate.returnOrientation();
-            double d1 = -pivotCorrection/70+robot_movement_y_component+robot_movement_x_component;
-            double d2 = -pivotCorrection/70-robot_movement_y_component-robot_movement_x_component;
-            double d3 = -pivotCorrection/70-robot_movement_y_component+robot_movement_x_component;
-            double d4 = -pivotCorrection/70+robot_movement_y_component-robot_movement_x_component;
+            double d1 = -pivotCorrection/60+robot_movement_y_component+robot_movement_x_component;
+            double d2 = -pivotCorrection/60-robot_movement_y_component-robot_movement_x_component;
+            double d3 = -pivotCorrection/60-robot_movement_y_component+robot_movement_x_component;
+            double d4 = -pivotCorrection/60+robot_movement_y_component-robot_movement_x_component;
             double koeff = 0.5;
             setMotorsPowerOdom(d1,d2,d3,d4);
 //            telemetry.addData("X Position", globalPositionUpdate.returnXCoordinate() / COUNTS_PER_INCH);
