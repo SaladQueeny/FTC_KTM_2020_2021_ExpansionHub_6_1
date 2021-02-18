@@ -55,7 +55,9 @@ public class DebugMotors extends Robot {
                 telemetry.addData("Right sensor", DistanceSensor_right.getDistance(DistanceUnit.CM));
                 telemetry.addData("Left sensor", DistanceSensor_left.getDistance(DistanceUnit.CM));
                 telemetry.addData("Forward sensor", DistanceSensor_forward.getDistance(DistanceUnit.CM));
-                telemetry.addData("angle", angles.firstAngle);
+                telemetry.addData("angle1", angles.firstAngle);
+                telemetry.addData("angle2", angles.secondAngle);
+                telemetry.addData("angle3", angles.thirdAngle);
                 telemetry.update();
             }
         }
