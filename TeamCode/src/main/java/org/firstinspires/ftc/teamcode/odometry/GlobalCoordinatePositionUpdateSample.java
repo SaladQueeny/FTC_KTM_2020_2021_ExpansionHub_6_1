@@ -1,3 +1,8 @@
+/*
+This program was written by the FTC KTM #12529 team at the Polytechnic University in 2020. 
+  
+   @author Kolpakov Egor
+*/
 package org.firstinspires.ftc.teamcode.odometry;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -5,10 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-/**
- * Created by Sarthak on 6/1/2019.
- * Example OpMode that runs the GlobalCoordinatePosition thread and accesses the (x, y, theta) coordinate values
- */
 @TeleOp(name = "Global Coordinate Position Test", group = "Calibration")
 public class GlobalCoordinatePositionUpdateSample extends LinearOpMode {
 
