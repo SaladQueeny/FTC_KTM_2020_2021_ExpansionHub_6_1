@@ -1,3 +1,8 @@
+/*
+This program was written by the FTC KTM #12529 team at the Polytechnic University in 2020. 
+  
+   @author Kolpakov Egor
+*/
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
