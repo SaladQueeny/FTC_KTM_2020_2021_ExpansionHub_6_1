@@ -1,12 +1,7 @@
 /*
-This program was written by the FTC KTM #12529 team at the Polytechnic University in 2020.
-
-This autonomy is the main one. She processes the number of rings and travels along a given trajectory
-
-Our team wishes you all the best for the upcoming tournament.
-All versions of the code starting from 2020 you can see here: https://github.com/RT-four/FTC-KTM-12529-TeamCode
-
-Directed by RT-4(Philipp Vasiliev) and Dafter(Daniil Simonovsky (VK: https://vk.com/dafter_play))
+This program was written by the FTC KTM #12529 team at the Polytechnic University in 2020. 
+  
+   @author Kolpakov Egor
 */
 
 package org.firstinspires.ftc.teamcode.AutoOPs;
