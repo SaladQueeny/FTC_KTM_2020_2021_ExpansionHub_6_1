@@ -1,3 +1,8 @@
+/*
+This program was written by the FTC KTM #12529 team at the Polytechnic University in 2020. 
+  
+   @author Kolpakov Egor
+*/
 package org.firstinspires.ftc.teamcode.odometry;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
@@ -12,11 +17,7 @@ import org.firstinspires.ftc.teamcode.Robot;
 
 import java.io.File;
 
-/**
- * Created by Sarthak on 6/1/2019.
- * Odometry system calibration. Run this OpMode to generate the necessary constants to calculate the robot's global position on the field.
- * The Global Positioning Algorithm will not function and will throw an error if this program is not run first
- */
+
 @TeleOp(name = "Odometry System Calibration", group = "Calibration")
 public class OdometryCalibration extends Robot {
     //Drive motors
